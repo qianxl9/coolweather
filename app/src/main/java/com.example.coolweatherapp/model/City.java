@@ -5,22 +5,25 @@ package com.example.coolweatherapp.model;
  */
 public class City {
 
+
     /**
-     * id : 2
-     * district_cn : 大理
-     * provinceid : 343
+     * province_cn : 云南
+     * district_cn : 西双版纳
+     * name_cn : 勐海
+     * name_en : menghai
+     * area_id : 101291603
      */
 
-    private int id;
+    private String province_cn;
     private String district_cn;
-    private int provinceId;
+    private String name_cn;
 
-    public int getId() {
-        return id;
+    public String getProvince_cn() {
+        return province_cn;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setProvince_cn(String province_cn) {
+        this.province_cn = province_cn;
     }
 
     public String getDistrict_cn() {
@@ -31,11 +34,11 @@ public class City {
         this.district_cn = district_cn;
     }
 
-    public int getProvinceid() {
-        return provinceId;
+    public String getName_cn() {
+        return name_cn;
     }
 
-    public void setProvinceid(int provinceid) {
-        this.provinceId = provinceid;
+    public void setName_cn(String name_cn) {
+        this.name_cn = name_cn;
     }
 }

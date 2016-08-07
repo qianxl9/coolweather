@@ -19,7 +19,7 @@ public class CoolWeatherDB {
         /*
         * 数据库名
         * */
-    public static final String DB_NAME = "cool_weather";
+    public static final String DB_NAME = "cool_weather.db";
 
     /*
     * 数据库版本号
@@ -67,42 +67,30 @@ public class CoolWeatherDB {
         if(city !=null){
             ContentValues values = new ContentValues();
             values.put("city_name",city.getDistrict_cn());
-            values.put("province_id",city.getProvinceid());
+            values.put("province_cn",city.getProvince_cn());
+            values.put("name_cn",city.getName_cn());
             database.insert("City",null,values);
         }
     }
 
-    public List<City> loadCities(int provinceId){
+    public List<City> loadCities(String provinceCn,boolean categroy){
         List<City> list = new ArrayList<City>();
+        Cursor cursor = null;
+        if (categroy){
+            cursor = database.query("City",null,"province_cn = ?",new String[]{provinceCn},null,null,null);
+        }else if(!categroy) {
+            cursor = database.query("City",null,"city_name = ?",new String[]{provinceCn},null,null,null);
+        }
 
-        Cursor cursor = database.query("City",null,"province_id=?",new String[]{String.valueOf(provinceId)},null,null,null,null);
         while (cursor.moveToNext()){
             City city = new City();
-            city.setId(cursor.getInt(cursor.getColumnIndex("id")));
+            city.setName_cn(cursor.getString(cursor.getColumnIndex("name_cn")));
             city.setDistrict_cn(cursor.getString(cursor.getColumnIndex("city_name")));
-            city.setProvinceid(provinceId);
+            city.setProvince_cn(provinceCn);
+            list.add(city);
         }
         if(cursor !=null)
             cursor.close();
-        return list;
-    }
-
-    public void saveCounty(County county){
-        if (county != null){
-            ContentValues values = new ContentValues();
-            values.put("county_name",county.getName_cn());
-            values.put("city_id",county.getCityId());
-        }
-    }
-
-    public List<County> loadCounties(int cityId){
-        List<County> list = new ArrayList<County>();
-        Cursor cursor = database.query("County",null,"city_id = ?" , new String[]{String.valueOf(cityId)},null,null,null);
-        while (cursor.moveToNext()){
-            County county = new County();
-            county.setCityId(cityId);
-            county.setName_cn(cursor.getString(cursor.getColumnIndex("county_name")));
-        }
         return list;
     }
 }
