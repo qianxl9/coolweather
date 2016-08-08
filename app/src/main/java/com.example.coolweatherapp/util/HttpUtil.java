@@ -37,8 +37,9 @@ public class HttpUtil {
                                             break;
                                         }
                                 }
-                            if(listener !=null)
+                            if(listener !=null){
                                 listener.onFinish(builder.toString());
+                            }
                         }
                     }catch (Exception e){
                         if(listener !=null)

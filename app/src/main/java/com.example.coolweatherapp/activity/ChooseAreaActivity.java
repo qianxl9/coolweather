@@ -1,7 +1,10 @@
 package com.example.coolweatherapp.activity;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.view.menu.ListMenuItemView;
@@ -24,6 +27,7 @@ import com.example.jh.coolweather.R;
 import org.json.JSONException;
 import org.xmlpull.v1.XmlPullParserException;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,10 +53,23 @@ public class ChooseAreaActivity extends AppCompatActivity {
     private City selectedCity;
     private Province selectedProvince;
     private int currentLevel;
+    private boolean isFromWeatherActivity = false;
+    private String cityName,provinceName;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        isFromWeatherActivity = getIntent().getBooleanExtra("from_weather_activity",false);
+        cityName = getIntent().getStringExtra("cityName");
+        provinceName = getIntent().getStringExtra("province");
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        if (preferences.getBoolean("city_selected",false) && !isFromWeatherActivity){
+            Intent intent = new Intent(ChooseAreaActivity.this,WeatherActivity.class);
+            startActivity(intent);
+            finish();
+            return;
+        }
+
         setContentView(R.layout.choose_area);
         listView = (ListView) findViewById(R.id.list_view);
         titleText = (TextView) findViewById(R.id.title_text);
@@ -69,10 +86,34 @@ public class ChooseAreaActivity extends AppCompatActivity {
                 }else if(currentLevel == LEVEL_CITY){
                     selectedCity = cityList.get(i);
                     queryCounties();
+                }else if(currentLevel == LEVEL_COUNTY){
+                    String selection = dataList.get(i);
+                    Intent intent = new Intent(ChooseAreaActivity.this,WeatherActivity.class);
+                    intent.putExtra("nameCn",selection);
+                    intent.putExtra("cityName",selectedCity.getDistrict_cn());
+                    intent.putExtra("province",selectedCity.getProvince_cn());
+                    startActivity(intent);
+                    finish();
                 }
             }
         });
-        queryProvinces();
+        if(!isFromWeatherActivity){
+            queryProvinces();
+        }else {
+            contentFilling(cityName,provinceName);
+        }
+
+    }
+
+    private void contentFilling(String cityName,String provinceName) {
+     //   cityList = coolWeatherDB.loadCities(provinceName,true);
+       // provinceList = coolWeatherDB.loadProvince();
+        selectedProvince = new Province();
+        selectedProvince.setProvince_cn(provinceName);
+        selectedCity = new City();
+        selectedCity.setDistrict_cn(cityName);
+        currentLevel = LEVEL_COUNTY;
+        queryCounties();
     }
 
     private void queryProvinces() {
@@ -94,7 +135,6 @@ public class ChooseAreaActivity extends AppCompatActivity {
 
     private void queryCounties() {
         cityList = coolWeatherDB.loadCities(selectedCity.getDistrict_cn(),false);
-        if(currentLevel == LEVEL_CITY){
             if(cityList.size() > 0 ){
                 dataList.clear();
                 for (City city:
@@ -104,16 +144,14 @@ public class ChooseAreaActivity extends AppCompatActivity {
                 adapter.notifyDataSetChanged();
                 listView.setSelection(0);
                 titleText.setText(selectedCity.getDistrict_cn());
-                currentLevel = LEVEL_CITY;
+                currentLevel = LEVEL_COUNTY;
             }else {
                 queryFromServer(selectedCity.getDistrict_cn(),"county");
             }
-        }
     }
 
     private void queryCities() {
         cityList = coolWeatherDB.loadCities(selectedProvince.getProvince_cn(),true);
-        if(currentLevel == LEVEL_PROVINCE){
             if(cityList.size() > 0 ){
                 dataList.clear();
                cityList = filter(cityList);
@@ -128,7 +166,6 @@ public class ChooseAreaActivity extends AppCompatActivity {
             }else {
                 queryFromServer(selectedProvince.getProvince_cn(),"city");
             }
-        }
     }
 
     private List<City> filter(List<City> cityList) {
@@ -210,5 +247,17 @@ public class ChooseAreaActivity extends AppCompatActivity {
             progressDialog.setCancelable(false);
         }
         progressDialog.show();
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(currentLevel == LEVEL_COUNTY){
+            queryCities();
+        }else if (currentLevel == LEVEL_CITY){
+            queryProvinces();
+        }else {
+            finish();
+        }
+       // super.onBackPressed();
     }
 }

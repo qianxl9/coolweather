@@ -44,6 +44,8 @@ public class CoolWeatherDB {
         if(province !=null){
             ContentValues values = new ContentValues();
             values.put("province_name",province.getProvince_cn());
+            if(!(province.getProvince_cn().equals("西沙")||province.getProvince_cn().equals("南沙")
+                    ||province.getProvince_cn().equals("钓鱼岛")))
             database.insert("Province",null,values);
         }
     }

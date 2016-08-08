@@ -25,8 +25,7 @@ public class Province {
     public String getProvince_cn() {
         return province_cn;
     }
-
-    public void setProvince_cn(String province_cn) {
+    public void setProvince_cn(String province_cn){
         this.province_cn = province_cn;
     }
 }
